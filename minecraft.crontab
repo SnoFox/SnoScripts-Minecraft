@@ -1,0 +1,4 @@
+0 8,16 * * * flock /tmp/mcbackup ./server/backup.sh bidaily
+0 0 * * 1-6 flock /tmp/mcbackup ./server/backup.sh daily
+0 0 * * 0 flock /tmp/mcbackup ./server/backup.sh weekly
+0 12 * * * ./server/init.sh restart
