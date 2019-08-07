@@ -3,7 +3,7 @@ SERVER_PATH=$(dirname $0)
 VERSION=$1
 URL=$2
 
-pushd $SERVER_PATH
+cd $SERVER_PATH
 source ./_server.sh
 wget -O server-${VERSION}.jar $URL
 status=$?
@@ -18,4 +18,3 @@ sleep 2
 quickstop
 rm server.jar && ln -s server-${VERSION}.jar server.jar
 start
-popd

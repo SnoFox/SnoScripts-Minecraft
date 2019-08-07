@@ -4,7 +4,8 @@
 # 1 = server already running
 # 2 = server not running
 SERVER_PATH=$(dirname $0)
-source ${SERVER_PATH}/_server.sh
+cd $SERVER_PATH
+source _server.sh
 
 status() {
   if [ -f server.pid ]; then
@@ -24,7 +25,6 @@ usage() {
   echo "Usage: $0 <start|restart|stop|quickstop|quickrestart|status>"
 }
 
-pushd $SERVER_PATH
 command=$1
 case $1 in
   start)
@@ -47,7 +47,10 @@ case $1 in
   status)
     status
     ;;
+  rcon)
+    shift
+    $RCON "$@"
+    ;;
   *)
     usage
 esac
-popd

@@ -1,6 +1,8 @@
 HOST='mc.example.com'
 PASS='s00perp4ss'
-RCON="/home/mc/bin/mcrcon -s -p $PASS -H $HOST "
+RAM_ALLOC='8G' # -Xms and -Xmx
+GC_THREADS='8' # g1gc: number of threads to use during GC
+RCON="/home/mc/bin/mcrcon -p $PASS -H $HOST "
 spinner=''
 _repeattext() {
   while true; do
@@ -10,7 +12,7 @@ _repeattext() {
 }
 
 rcon() {
-  $RCON "$@"
+  $RCON -s "$@"
 }
 
 actionbar() {
@@ -62,10 +64,6 @@ start() {
     echo "Server already running"
     exit 1
   fi
-  # https://howtodoinjava.com/java/garbage-collection/all-garbage-collection-algorithms/#g1-gc
-  #-Dsun.rmi.dgc.server.gcInterval=2147483646 \
-    #-XX:G1MaxNewSizePercent=50 \ # percentage, lower than default
-    #-XX:+PrintGCDetails \
   exec java -d64 \
     -XX:+UseG1GC \
     -XX:+UnlockExperimentalVMOptions \
@@ -75,28 +73,16 @@ start() {
     -XX:GCHeapFreeLimit=20 \
     -XX:GCTimeLimit=60 \
     -XX:G1HeapRegionSize=4M \
-    -XX:ParallelGCThreads=8 \
+    -XX:ParallelGCThreads=${GC_THREADS} \
     -XX:G1MixedGCLiveThresholdPercent=60 \
-    -Xmx8G \
-    -Xms8G \
+    -Xmx${RAM_ALLOC} \
+    -Xms${RAM_ALLOC} \
     -verbose:gc \
     -XX:+PrintTenuringDistribution \
     -jar server.jar > logs/stdout.log 2> logs/stderr.log &
-  echo $! > server.pid
-  echo "It's up; PID $(cat server.pid)"
-}
-
-comment() {
-  exit
-    -XX:+UseConcMarkSweepGC \
-    -XX:+UseParNewGC \
-    -XX:ParallelGCThreads=8 \
-    -XX:+CMSParallelRemarkEnabled \
-    -XX:+DisableExplicitGC \
-    -XX:MaxGCPauseMillis=500 \
-    -XX:SurvivorRatio=16 \
-    -XX:TargetSurvivorRatio=90 \
-    noop
+  PID=$!
+  echo $PID > server.pid
+  echo "It's up; PID ${PID}"
 }
 
 quickstop() {

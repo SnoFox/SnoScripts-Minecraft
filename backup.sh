@@ -3,20 +3,20 @@ WORLDS=(world)
 SAVE=5
 SERVER_PATH=$(dirname $0)
 
-pushd $SERVER_PATH
+cd $SERVER_PATH
 source ./_server.sh
 
 actionbar '{"text":"World backup is running...","color":"light_purple"}'
 
 prefix=${1:-custom}
 backup() {
-  backup_dir="${SERVER_PATH}/backups/${prefix}_$(date +%F_%s)"
+  backup_dir="backups/${prefix}_$(date +%F_%s)"
   mkdir -p $backup_dir
   rcon 'save-off'
   echo 'Turned off saving'
   sleep 10
   for world in "${WORLDS[@]}"; do
-    rsync -a ${SERVER_PATH}/${world} $backup_dir
+    rsync -a ${world} $backup_dir
     status=$?
     if [ $status -ne 0 ]; then
       warnfail $status
@@ -32,8 +32,7 @@ clean() {
   if [ "$prefix" == "custom" ]; then
     return
   fi
-  backup_dir="${SERVER_PATH}/backups"
-  pushd $backup_dir
+  pushd backups
   for dir in $(ls -td ${prefix}_*|tail -n +${SAVE}); do
     rm -rf $dir
   done
@@ -42,4 +41,3 @@ clean() {
 
 backup
 clean
-popd
